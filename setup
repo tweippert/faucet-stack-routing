@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Source bashrc-of
+source bashrc-of
+
+# Cleanup scenario
+cleanup
+
+# Create DP 0x1 - OF1
+sudo ovs-vsctl add-br OF1 \
+-- set bridge OF1 other-config:datapath-id=0000000000000001 \
+-- set bridge OF1 other-config:disable-in-band=true \
+-- set bridge OF1 fail_mode=secure \
+-- set-controller OF1 tcp:127.0.0.1:6653 tcp:127.0.0.1:6654
+
+
+# Create DP 0x2 - OF2
+sudo ovs-vsctl add-br OF2 \
+-- set bridge OF2 other-config:datapath-id=0000000000000002 \
+-- set bridge OF2 other-config:disable-in-band=true \
+-- set bridge OF2 fail_mode=secure \
+-- set-controller OF2 tcp:127.0.0.1:6653 tcp:127.0.0.1:6654
+
+# Create Trunk Ports between OF1/OF2
+sudo ovs-vsctl add-port OF1 TRUNK1-2 \
+-- set interface TRUNK1-2 type=patch \
+-- set interface TRUNK1-2 options:peer=TRUNK2-1 \
+-- set interface TRUNK1-2 ofport_request=5
+
+sudo ovs-vsctl add-port OF2 TRUNK2-1 \
+-- set interface TRUNK2-1 type=patch \
+-- set interface TRUNK2-1 options:peer=TRUNK1-2 \
+-- set interface TRUNK2-1 ofport_request=5
+
+# Create Test Namespaces and Connect them - OF1
+create_ns host1 10.0.100.10/24
+as_ns host1 ip route add default via 10.0.100.254
+sudo ovs-vsctl add-port OF1 veth-host1 \
+-- set interface veth-host1 ofport_request=1
+
+create_ns host2 10.0.100.20/24
+as_ns host2 ip route add default via 10.0.100.254
+sudo ovs-vsctl add-port OF1 veth-host2 \
+-- set interface veth-host2 ofport_request=2
+
+create_ns guest1 10.0.200.10/24
+as_ns guest1 ip route add default via 10.0.200.254
+sudo ovs-vsctl add-port OF1 veth-guest1 \
+-- set interface veth-guest1 ofport_request=3
+
+# Create Test Namespaces and Connect them - OF2
+create_ns pi 10.0.100.100/24
+as_ns pi ip route add default via 10.0.100.254
+sudo ovs-vsctl add-port OF2 veth-pi \
+-- set interface veth-pi ofport_request=1
+
+# copy all yaml files into /etc/faucet/
+# and restart faucet (additional faucet-l3)
+cp ./*.yaml /etc/faucet/
+systemctl restart faucet
+

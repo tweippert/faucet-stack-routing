@@ -1,0 +1,52 @@
+vlans:
+    office:
+        vid: 100
+        description: "office network"
+#        faucet_mac: "0e:00:00:00:10:01"
+#        faucet_vips: ['10.0.100.254/24']
+    guest:
+        vid: 200
+        description: "guest network"
+#        faucet_mac: "0e:00:00:00:20:01"
+#        faucet_vips: ['10.0.200.254/24']
+
+#routers:
+#    router-office-guest:
+#        vlans: [office, guest]
+
+dps:
+    OF1:
+        dp_id: 0x1
+        description: "OF1"
+        hardware: "Open vSwitch"
+        stack:
+            priority: 1
+        interfaces:
+            1:
+                name: "host1"
+                description: "host1 container"
+                native_vlan: office
+            2:
+                name: "host2"
+                description: "host2 container"
+                native_vlan: office
+            3:
+                name: "guest1"
+                description: "guest1 container"
+                native_vlan: guest
+            5:
+                stack: { dp: OF2, port: 5 }
+
+    OF2:
+        dp_id: 0x2
+        description: "OF2"
+        hardware: "Open vSwitch"
+        interfaces:
+            1:
+                name: "pi"
+                description: "raspberry pi"
+                native_vlan: office
+            5:
+                name: "trunk"
+                description: "VLAN trunk to sw1"
+                stack: { dp: OF1, port: 5 }
