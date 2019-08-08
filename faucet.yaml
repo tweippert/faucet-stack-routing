@@ -2,17 +2,17 @@ vlans:
     office:
         vid: 100
         description: "office network"
-#        faucet_mac: "0e:00:00:00:10:01"
-#        faucet_vips: ['10.0.100.254/24']
+        faucet_mac: "0e:00:00:00:10:01"
+        faucet_vips: ['10.0.100.254/24']
     guest:
         vid: 200
         description: "guest network"
-#        faucet_mac: "0e:00:00:00:20:01"
-#        faucet_vips: ['10.0.200.254/24']
+        faucet_mac: "0e:00:00:00:20:01"
+        faucet_vips: ['10.0.200.254/24']
 
-#routers:
-#    router-office-guest:
-#        vlans: [office, guest]
+routers:
+    router-office-guest:
+        vlans: [office, guest]
 
 dps:
     OF1:
@@ -21,6 +21,10 @@ dps:
         hardware: "Open vSwitch"
         stack:
             priority: 1
+        lldp_beacon:
+            send_interval: 5
+            max_per_interval: 5
+
         interfaces:
             1:
                 name: "host1"
@@ -41,6 +45,9 @@ dps:
         dp_id: 0x2
         description: "OF2"
         hardware: "Open vSwitch"
+        lldp_beacon:
+            send_interval: 5
+            max_per_interval: 5
         interfaces:
             1:
                 name: "pi"
