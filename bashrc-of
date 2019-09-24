@@ -51,6 +51,8 @@ cleanup () {
     done
     # Remove faucet dataplane connection
     sudo ip link delete veth-faucet 2>/dev/null || true
+    sudo ip link delete veth-lacp1 2>/dev/null || true
+    sudo ip link delete veth-lacp2 2>/dev/null || true
     # Remove openvswitch bridge
     sudo ovs-vsctl del-br OF1 2>/dev/null || true
     sudo ovs-vsctl del-br OF2 2>/dev/null || true
@@ -66,4 +68,20 @@ add_tagged_interface () {
      sudo ip netns exec ${NETNS} ip link set dev veth0.${VLAN} up
      sudo ip netns exec ${NETNS} ip addr flush dev veth0
      sudo ip netns exec ${NETNS} ip addr add dev veth0.${VLAN} $IP
+}
+
+# Add second LACP Interface to network namespace and configure Channel
+add_lacp_interface() {
+    NAME=$1
+    IP=$2
+    NETNS=ns-${NAME}
+    sudo ip link add dev veth-lacp1 type veth peer name veth10 netns $NETNS
+    sudo ip link set dev veth-lacp1 up
+    sudo ip link add dev veth-lacp2 type veth peer name veth11 netns $NETNS
+    sudo ip link set dev veth-lacp2 up
+    sudo ip netns exec ${NETNS} ip link add name bond0 type bond mode 802.3ad
+    sudo ip netns exec ${NETNS} ip link set veth10 master bond0
+    sudo ip netns exec ${NETNS} ip link set veth11 master bond0
+    sudo ip netns exec ${NETNS} ip addr add dev bond0 $IP
+    sudo ip netns exec ${NETNS} ip link set bond0 up
 }

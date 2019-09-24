@@ -9,18 +9,24 @@ vlans:
         description: "guest network"
         faucet_mac: "0e:00:00:00:20:01"
         faucet_vips: ['10.0.200.254/24', '2001:200::1/64', 'fe80::c00:00ff:fe00:2001/64']
+    test:
+        vid: 300
+        description: "test network"
+        faucet_mac: "0e:00:00:00:30:01"
+        faucet_vips: ['10.0.30.254/24', '2001:300::1/64', 'fe80::c00:00ff:fe00:3001/64']
 
 routers:
     router-office-guest:
-        vlans: [office, guest]
-
+        vlans: [office, guest, test]
 dps:
     OF1:
         dp_id: 0x1
         description: "OF1"
         hardware: "Open vSwitch"
+        drop_spoofed_faucet_mac: False
         stack:
             priority: 1
+        lacp_timeout: 5
         lldp_beacon:
             send_interval: 5
             max_per_interval: 5
@@ -40,11 +46,18 @@ dps:
                 native_vlan: guest
             5:
                 stack: { dp: OF2, port: 5 }
+            10:
+                name: "lacp1"
+                description: "host1 container lacp1"
+                native_vlan: test
+                lacp: 10
 
     OF2:
         dp_id: 0x2
         description: "OF2"
         hardware: "Open vSwitch"
+        drop_spoofed_faucet_mac: False
+        lacp_timeout: 5
         lldp_beacon:
             send_interval: 5
             max_per_interval: 5
@@ -53,7 +66,16 @@ dps:
                 name: "pi"
                 description: "raspberry pi"
                 native_vlan: office
+            2:
+                name: "guest2"
+                description: "guest2 container"
+                native_vlan: guest
             5:
                 name: "trunk"
                 description: "VLAN trunk to sw1"
                 stack: { dp: OF1, port: 5 }
+            10:
+                name: "lacp2"
+                description: "host1 container lacp2"
+                native_vlan: test
+                lacp: 10

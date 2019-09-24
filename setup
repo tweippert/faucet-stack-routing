@@ -37,6 +37,11 @@ create_ns host1 10.0.100.10/24
 as_ns host1 ip route add default via 10.0.100.254
 sudo ovs-vsctl add-port OF1 veth-host1 \
 -- set interface veth-host1 ofport_request=1
+add_lacp_interface host1 10.0.30.10/24
+sudo ovs-vsctl add-port OF1 veth-lacp1 \
+-- set interface veth-lacp1 ofport_request=10
+sudo ovs-vsctl add-port OF2 veth-lacp2 \
+-- set interface veth-lacp2 ofport_request=10
 
 create_ns host2 10.0.100.20/24
 as_ns host2 ip route add default via 10.0.100.254
@@ -53,6 +58,11 @@ create_ns pi 10.0.100.100/24
 as_ns pi ip route add default via 10.0.100.254
 sudo ovs-vsctl add-port OF2 veth-pi \
 -- set interface veth-pi ofport_request=1
+
+#create_ns guest2 10.0.200.20/24
+#as_ns guest2 ip route add default via 10.0.200.254
+#sudo ovs-vsctl add-port OF2 veth-guest2 \
+#-- set interface veth-guest2 ofport_request=2
 
 # copy all yaml files into /etc/faucet/
 # and restart faucet (additional faucet-l3)
