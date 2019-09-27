@@ -48,7 +48,12 @@ dps:
                 stack: { dp: OF2, port: 5 }
             10:
                 name: "lacp1"
-                description: "host1 container lacp1"
+                description: "lacp container lacp1"
+                native_vlan: test
+                lacp: 10
+            11:
+                name: "lacp2"
+                description: "lacp container lacp2"
                 native_vlan: test
                 lacp: 10
 
@@ -74,8 +79,3 @@ dps:
                 name: "trunk"
                 description: "VLAN trunk to sw1"
                 stack: { dp: OF1, port: 5 }
-            10:
-                name: "lacp2"
-                description: "host1 container lacp2"
-                native_vlan: test
-                lacp: 10
